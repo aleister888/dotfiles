@@ -1,0 +1,23 @@
+#!/usr/bin/zsh
+
+COLOR="\x1b[92m"
+
+if	[ "$(command -v pacman 2>&1)" = "/usr/bin/pacman" ]; then
+echo ""$COLOR"Uptime:	  \x1b[39m$(uptime -p | sed "s/up //")
+"$COLOR"Terminal: \x1b[39m$(echo $TERMINAL)
+"$COLOR"Shell:	  \x1b[39m$(echo $SHELL)
+"$COLOR"Packages: \x1b[39m$(pacman -Q | wc -l) (pacman)
+"$COLOR"Battery:  \x1b[39m$(cat /sys/class/power_supply/BAT0/capacity)%
+"$COLOR"Mem:	  \x1b[39m$(echo $(free -m | awk 'NR >= 2 && NR <= 2' | \
+awk '{print $3}'; echo /; free -m | awk 'NR >= 2 && NR <= 2' | awk '{print $2}'; echo MB))
+"$COLOR"Kernel:	  \x1b[39m$(uname -r)
+"$COLOR"Distro:	  \x1b[39m$(cat /etc/*-release | grep PRETTY_NAME | sed 's/.*"\(.*\)"[^"]*$/\1/')
+"
+else
+echo "\x1b[91mXX   XX
+\x1b[91m XX XX	  \x1b[39mThis script is only meant to be run under Arch Linux,
+\x1b[91m  XXX	  \x1b[39mif you are seeing this message it means pacman was not
+\x1b[91m XX XX	  \x1b[39mfound under /usr/bin
+\x1b[91mXX   XX
+"
+fi

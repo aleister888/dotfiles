@@ -1,0 +1,20 @@
+#!/bin/sh
+# tells if touchpad and caps lock are active, and wich graphic card is being used
+TOUCHPAD=$(xinput | grep Touchpad | awk {'print $6'} | sed 's/^...//')
+echo $(
+if	[ "$(xinput --list-props $TOUCHPAD | grep "Device Enabled" | awk {'print $4'} 2>&1)" = "1" ]; then
+		echo ""
+else
+		echo ""
+fi
+if	[ "$(cat /sys/class/leds/input4::capslock/brightness 2>&1)" = "1" ]; then
+		echo ""
+else
+		echo ""
+fi
+if	[ "$(glxinfo | grep "OpenGL renderer" 2>&1)" = "OpenGL renderer string: NVIDIA GeForce RTX 3060 Laptop GPU/PCIe/SSE2" ]; then
+		echo "ﰉ"
+else
+		echo "ﰊ"
+fi
+)

@@ -1,0 +1,5 @@
+#!/bin/sh
+# prints volume
+vol="$(pamixer --get-volume)"
+[ $(pamixer --get-mute) = true ] && echo " $vol%" && exit
+echo " $vol%"

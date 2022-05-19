@@ -1,0 +1,9 @@
+#!/bin/sh
+# prints current song in tauon
+if	[ "$(playerctl status -p tauon 2>&1)" = "No players found" ]; then
+		echo ""
+elif	[ "$(playerctl status -p tauon 2>&1)" = "Paused" ]; then
+		echo " $(playerctl -p tauon metadata xesam:artist) | $(playerctl -p tauon metadata xesam:title)  "
+else
+		echo " $(playerctl -p tauon metadata xesam:artist) | $(playerctl -p tauon metadata xesam:title)  "
+fi

@@ -1,0 +1,16 @@
+#!/bin/sh
+if [ "$(upower -i $(upower -e) | grep online | awk '{print $2}' 2>&1)" = "no" ]; then
+        if [ "$(ls /tmp/ | grep battery)" = "" ]; then
+                if [ 20 -ge "$(upower -i $(upower -e|grep 'BAT')|grep percentage|awk '{print $2}'|awk '{t=length($0)}END{print substr($0,0,t-1)}')" ]; then
+			$(notify-send "🔋 Battery Below 20%: The device will automatically suspend under 10%"; touch /tmp/battery)
+                fi
+        fi
+fi
+if [ "$(upower -i $(upower -e) | grep online | awk '{print $2}' 2>&1)" = "no" ]; then
+        if [ 10 -ge "$(upower -i $(upower -e|grep 'BAT')|grep percentage|awk '{print $2}'|awk '{t=length($0)}END{print substr($0,0,t-1)}')" ]; then
+		$(rm /tmp/battery; doas systemctl suspend)
+        fi
+fi
+if [ "$(upower -i $(upower -e|grep 'BAT')|grep percentage|awk '{print $2}'|awk '{t=length($0)}END{print substr($0,0,t-1)}')" -ge 20 ]; then
+        rm /tmp/battery
+fi
