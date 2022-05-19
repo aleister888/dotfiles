@@ -1,0 +1,116 @@
+#       _      _     _            ___   ___   ___             _     _       _ 
+#  __ _| | ___(_)___| |_ ___ _ __( _ ) ( _ ) ( _ )   _____  _| |__ | | ____| |
+# / _` | |/ _ \ / __| __/ _ \ '__/ _ \ / _ \ / _ \  / __\ \/ / '_ \| |/ / _` |
+#| (_| | |  __/ \__ \ ||  __/ | | (_) | (_) | (_) | \__ \>  <| | | |   < (_| |
+# \__,_|_|\___|_|___/\__\___|_|  \___/ \___/ \___/  |___/_/\_\_| |_|_|\_\__,_|
+#
+
+# app-launching
+super + Return
+        $TERMINAL
+super + F2
+	$BROWSER
+super + F4
+	tauon
+super + shift + k
+	xkill
+super + d
+	dmenu_run
+
+# audio control
+super + F12
+	pavucontrol
+XF86AudioRaiseVolume
+	pactl set-sink-volume @DEFAULT_SINK@ +5%
+XF86AudioLowerVolume
+	pactl set-sink-volume @DEFAULT_SINK@ -5%
+XF86AudioMute
+	pactl set-sink-mute @DEFAULT_SINK@ toggle
+shift + XF86AudioLowerVolume
+	pactl set-sink-volume @DEFAULT_SINK@ 65536
+alt + XF86AudioLowerVolume
+	pactl set-sink-volume @DEFAULT_SINK@ 32768
+shift + XF86AudioPlay
+	exec playerctl play-pause
+shift + XF86AudioNext
+	exec playerctl next
+shift + XF86AudioStop
+	exec playerctl stop
+shift + XF86AudioPrev
+	exec playerctl previous
+
+# music control
+super + z
+	exec playerctl -p tauon previous
+super + x
+	exec playerctl -p tauon play-pause
+super + c
+	exec playerctl -p tauon next
+super + shift + z
+	exec playerctl previous
+super + shift + x
+	exec playerctl play-pause
+super + shift + c
+	exec playerctl next
+XF86AudioPlay
+	exec playerctl -p tauon play-pause
+XF86AudioNext
+	exec playerctl -p tauon next
+XF86AudioStop
+	exec playerctl -p tauon stop
+XF86AudioPrev
+	exec playerctl -p tauon previous
+
+# screenshots
+super + p
+	import -window root png:- | xclip -selection clipboard -t image/png; notify-send 'Screenshot copied to Clipboard'
+super + shift + p
+	pkill unclutter; import png:- | xclip -selection clipboard -t image/png; notify-send 'Screenshot copied to Clipboard' && unclutter -idle 3 &
+super + alt + p
+	cd $HOME/Pictures/ && import -window root screenshot.png; notify-send 'Screenshot saved in $HOME/Pictures'
+super + alt + shift + p
+	pkill unclutter; cd $HOME/Pictures/ && import screenshot.png; notify-send 'Screenshot saved in $HOME/Pictures' && unclutter -idle 3 &
+super + n
+	feh --randomize --no-fehbg --bg-fill $HOME/Pictures/Wallpapers
+
+# ~/.local/scripts
+super + F5
+	$HOME/.local/scripts/sxhkd/dmenu-nvidia.sh
+super + F6
+	$HOME/.local/scripts/sxhkd/dmenu-mount.sh
+super + shift + F6
+	$HOME/.local/scripts/sxhkd/dmenu-umount.sh
+super + shift + F2
+	$HOME/.local/scripts/browser/dmenu-browser.sh
+super + ctrl + F2
+	$HOME/.local/scripts/browser/dmenu-browser-edit.sh
+super + F3
+	kitty $HOME/.local/scripts/lfub
+super + shift + F3
+	$HOME/.local/scripts/sxhkd/dmenu-lfub.sh
+super + alt + F3
+	pcmanfm
+super + F11
+	$HOME/.local/scripts/sxhkd/dmenu-powermenu.sh
+
+# resolution/monitor ctrl
+super + F1
+	$HOME/.local/scripts/sxhkd/dmenu-monitor-layout.sh
+super + shift + F1
+	$HOME/.local/scripts/sxhkd/dwm-res.sh
+
+# enable/disable trackpad
+XF86TouchpadToggle
+	$HOME/.local/scripts/sxhkd/touchpad-xinput.sh
+super + F9
+	$HOME/.local/scripts/sxhkd/touchpad-xinput.sh
+
+# brightness up/down
+XF86MonBrightnessUp
+	$HOME/.local/scripts/sxhkd/bright-up.sh
+XF86MonBrightnessDown
+	$HOME/.local/scripts/sxhkd/bright-down.sh
+super + F8
+	$HOME/.local/scripts/sxhkd/bright-up.sh
+super + F7
+	$HOME/.local/scripts/sxhkd/bright-down.sh

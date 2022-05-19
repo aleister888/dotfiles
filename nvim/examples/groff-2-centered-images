@@ -1,0 +1,4 @@
+.mk
+.PSPIC -L "image1.eps" 2
+.rt
+.PSPIC -R "image2.eps" 2

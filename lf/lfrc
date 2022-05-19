@@ -1,0 +1,260 @@
+#       _      _     _              _  __                    __ _       
+#  __ _| | ___(_)___| |_ ___ _ __  | |/ _|   ___ ___  _ __  / _(_) __ _ 
+# / _` | |/ _ \ / __| __/ _ \ '__| | | |_   / __/ _ \| '_ \| |_| |/ _` |
+#| (_| | |  __/ \__ \ ||  __/ |    | |  _| | (_| (_) | | | |  _| | (_| |
+# \__,_|_|\___|_|___/\__\___|_|    |_|_|    \___\___/|_| |_|_| |_|\__, |
+#                                                                 |___/ 
+# 				KEYBINDS:
+# 			Z	-> Go to $HOME
+#			/	-> Search with fzf
+#			Alt+7	-> Search with fzf and grep
+#			Ctrl+s	-> Clean trash
+#			Alt+s	-> Restore trash
+#			D	-> Move to trash
+#			S	-> Delete
+#			E	-> Extract
+#			Alt+e	-> Compress (tar.gz)
+#			r	-> Rename
+#			Crtl+r	-> Rename in nvim
+#			R	-> Reload
+#			Return	-> Open with
+#			o	-> mimeopen
+#			O	-> mimeopen --ask
+#			H	-> Edit config file
+#			h	-> Show/Hide .*/
+#			s	-> Shell
+#			V	-> Edit with nvim
+#			Y	-> Yank selection
+#			y	-> Copy
+#			d	-> Cut
+#			x	-> Change file permissions
+#			p	-> Paste
+#
+map p p-paste
+map x file-permissions
+map <c-r> bulk-rename
+map / :fzf_jump
+map <a-7> :fzf_search
+map Z home
+map D trash
+map <c-s> clean-trash
+map S delete
+map <a-s> restore-trash
+map E extract
+map <a-e> push :!tar<space>-zcvf<space>*.tar.gz<space>$fx
+map r rename
+map R reload
+cmd open-with %export QT_QPA_PLATFORMTHEME=qt5ct; devour "$@" "$fx"
+map <enter> push :open-with<space>
+map o &mimeopen $f
+map O $mimeopen --ask $f
+map H vim-config
+map h set hidden!
+map s shell
+map V push :!nvim<space>
+map Y $printf "%s" "$fx" | xclip -selection clipboard
+# Basic vars
+set shellopts '-eu'
+set ifs "\n"
+set scrolloff 10
+set icons
+set period 1
+set cleaner '~/.config/lf/cleaner'
+set previewer '~/.config/lf/scope'
+set info size:time
+#		latex/groff files				reaper
+set hiddenfiles ".*:*.aux:*.log:*.toc:*timeshift:*.reapeaks"
+
+cmd on-cd &{{
+    # '&' commands run silently in background (which is what we want here),
+    # but are not connected to stdout.
+    # To make sure our escape sequence still reaches stdout we pipe it to /dev/tty
+    printf "\033]0; $PWD\007" > /dev/tty
+}}
+
+set shell zsh
+set shellopts '-euy'
+set ifs "\n"
+
+# also run at startup
+on-cd
+
+# cmds/functions
+cmd home :cd ~/
+
+cmd vim-config ${{
+	nvim $HOME/.config/lf/lfrc
+}}
+
+cmd bulk-rename ${{
+    old="$(mktemp)"
+    new="$(mktemp)"
+    if [ -n "$fs" ]; then
+        fs="$(basename $fs)"
+    else
+        fs="$(ls)"
+    fi
+    printf '%s\n' "$fs" >"$old"
+    printf '%s\n' "$fs" >"$new"
+    $EDITOR "$new"
+    [ "$(wc -l < "$new")" -ne "$(wc -l < "$old")" ] && exit
+    paste "$old" "$new" | while IFS= read -r names; do
+        src="$(printf '%s' "$names" | cut -f1)"
+        dst="$(printf '%s' "$names" | cut -f2)"
+        if [ "$src" = "$dst" ] || [ -e "$dst" ]; then
+            continue
+        fi
+        mv -- "$src" "$dst"
+    done
+    rm -- "$old" "$new"
+    lf -remote "send $id unselect"
+}}
+
+cmd fzf_search ${{
+    res="$( \
+        RG_PREFIX="rg --column --line-number --no-heading --color=always \
+            --smart-case "
+        FZF_DEFAULT_COMMAND="$RG_PREFIX ''" \
+            fzf --bind "change:reload:$RG_PREFIX {q} || true" \
+            --ansi --layout=reverse --header 'Search in files' \
+            | cut -d':' -f1
+    )"
+    [ ! -z "$res" ] && lf -remote "send $id select \"$res\""
+}}
+
+cmd fzf_jump ${{
+    res="$(find . -maxdepth 1 | fzf --reverse --header='Jump to location' | sed 's/\\/\\\\/g;s/"/\\"/g')"
+    if [ -d "$res" ] ; then
+        cmd="cd"
+    elif [ -f "$res" ] ; then
+        cmd="select"
+    else
+        exit 0
+    fi
+    lf -remote "send $id $cmd \"$res\""
+}}
+
+cmd unmake-ex ${{
+	clear; tput bold
+	set -f
+	printf "un-make executable?[y/N]"
+	read ans
+	[ $ans = "y" ] && sudo chmod a-x $fx && printf "done"
+	read ans
+}}
+
+cmd make-ex ${{
+	clear; tput bold
+	set -f
+	printf "make executable?[y/N]"
+	read ans
+	[ $ans = "y" ] && sudo chmod +x $fx && printf "done"
+	read ans
+}}
+
+cmd file-permissions ${{
+	clear; tput bold
+	set -f
+	printf "Change file permissions:
+	[1] chmod a-x (non exectuable)
+	[2] chmod +x (exectuable)
+	[3] chmod 777 (everyone write/read)"
+	read ans
+	[ $ans = "1" ] && sudo chmod a-x $fx && printf "done"
+	[ $ans = "2" ] && sudo chmod +x $fx && printf "done"
+	[ $ans = "3" ] && sudo chmod 777 $fx && printf "done"
+	read ans
+}}
+
+cmd clean-trash ${{
+	clear; tput bold
+	set -f
+	printf "TRASH BIN CONTENT:
+"
+	trash-list
+	printf "clean trash?[y/N]"
+	read ans
+	[ $ans = "y" ] && trash-empty -f && printf "done"
+	read ans
+}}
+
+cmd restore-trash ${{
+	clear; tput bold
+	set -f
+	printf "TRASH BIN CONTENT:
+"
+	trash-list
+	printf "restore trash?[y/N]"
+	read ans
+	[ $ans = "y" ] && trash-restore && printf "done"
+	read ans
+}}
+
+cmd open ${{
+    case $(file --mime-type "$(readlink -f $f)" -b) in
+	image/svg+xml) display -- $f ;;
+	application/octet-stream) devour tuxguitar $fx;;
+	application/zip) setsid -f devour zathura $fx >/dev/null 2>&1 ;;
+	text/*|application/json|inode/x-empty) $EDITOR $fx;;
+	image/*) $HOME/.local/scripts/rotdir $f | grep -i "\.\(png\|jpg\|jpeg\|gif\|webp\|tif\|ico\)\(_large\)*$" |
+		setsid -f devour sxiv -aio 2>/dev/null | while read -r file; do
+			[ -z "$file" ] && continue
+			lf -remote "send select \"$file\""
+			lf -remote "send toggle"
+		done &
+		;;
+	audio/*) mpv --audio-display=no $f ;;
+	video/*) setsid -f devour mpv $f -quiet >/dev/null 2>&1 ;;
+	application/pdf|application/vnd*|application/epub*) setsid -f devour zathura $fx >/dev/null 2>&1 ;;
+	application/pgp-encrypted) $EDITOR $fx ;;
+        *) for f in $fx; do setsid -f $OPENER $f >/dev/null 2>&1; done;;
+    esac
+}}
+
+cmd mkdir $mkdir -p "$(echo $* | tr ' ' '\ ')"
+
+#requires 'atool' package
+cmd extract ${{
+	clear; tput cup $(($(tput lines)/3)); tput bold
+	set -f
+	printf "%s\n\t" "$fx"
+	printf "extract?[y/N]"
+	read ans
+	[ $ans = "y" ] && aunpack $fx
+}}
+
+cmd delete ${{
+	clear; tput cup $(($(tput lines)/3)); tput bold
+	set -f
+	printf "%s\n\t" "$fx"
+	printf "delete?[y/N]"
+	read ans
+	[ $ans = "y" ] && rm -rf -- $fx
+}}
+
+cmd p-paste ${{
+    set -- $(cat ~/.local/share/lf/files)
+    mode="$1"
+    shift
+    case "$mode" in
+        copy)
+            rsync -av --ignore-existing --progress -- "$@" . |
+            stdbuf -i0 -o0 -e0 tr '\r' '\n' |
+            while IFS= read -r line; do
+                lf -remote "send $id echo $line"
+            done
+            ;;
+        move) mv -n -- "$@" .;;
+    esac
+    rm ~/.local/share/lf/files
+    lf -remote "send clear"
+}}
+
+cmd trash ${{
+	clear; tput cup $(($(tput lines)/3)); tput bold
+	set -f
+	printf "%s\n\t" "$fx"
+	printf "move to trash?[y/N]"
+	read ans
+	[ $ans = "y" ] && gio trash $fx
+}}

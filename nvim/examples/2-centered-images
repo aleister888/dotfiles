@@ -1,0 +1,4 @@
+\begin{figure}[h] \centering
+\includegraphics[width=6cm, height=4cm]{IMAGE1} \hspace{0.2cm}
+\includegraphics[width=6cm, height=4cm]{IMAGE2}
+\caption{} \end{figure}

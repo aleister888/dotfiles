@@ -1,0 +1,4 @@
+% fits with 1.1in margin
+
+\begin{figure}[h] \centering
+\includegraphics[width=5cm, height=7.2cm]{IMAGE1}\hspace{0.2cm}\includegraphics[width=5cm, height=7.2cm]{IMAGE2}\hspace{0.2cm}\includegraphics[width=5cm, height=7.2cm]{IMAGE3}\end{figure}

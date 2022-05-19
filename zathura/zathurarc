@@ -1,0 +1,24 @@
+set window-title-basename "true"
+set selection-clipboard "clipboard"
+
+set adjust-open width
+set recolor true
+
+set sandbox none
+set statusbar-h-padding 0
+set statusbar-v-padding 0
+
+map w adjust_window width
+map W adjust_window best-fit
+map f toggle_fullscreen
+map [fullscreen] f toggle_fullscreen page-padding 1
+
+set statusbar-bg                "#070707" # base02
+set statusbar-fg                "#ffffff" # base1
+
+set default-bg                  "#070707" # base02
+set default-fg                  "#ffffff" # base1
+
+set recolor                     true
+set recolor-lightcolor          "#090909" # base02
+set recolor-darkcolor           "#ffffff" # base1

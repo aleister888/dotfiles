@@ -1,0 +1,1 @@
+doas rm -r $HOME/.local/tmp/*; doas /usr/bin/prime-switch; 
