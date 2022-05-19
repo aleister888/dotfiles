@@ -1,0 +1,27 @@
+#!/bin/sh
+#set opts
+alias \
+	grep='grep --color=auto' \
+	cp='cp -iv' \
+	yay='yay --sudo doas' \
+	startx='startx /home/aleister/.config/xinitrc' \
+	wget='wget --hsts-file="$XDG_CONFIG_HOME/wget-hsts'
+	gpg2='gpg2 --homedir "$XDG_DATA_HOME"/gnupg' \
+
+#change/abreviate cmds
+alias \
+	ls='exa -a' \
+	c='/bin/clear' \
+	v='nvim' \
+	vim='nvim' \
+	d='devour' \
+	wifi='iwctl' \
+	demucs='/home/aleister/.pyenv/versions/demucs/bin/python3 -m demucs -j2 -o /tmp/' \
+	cleanup='yay -Rcsn --sudo doas $(yay -Qdtq)' \
+	cbr2pdf='/home/aleister/.local/scripts/cbr2pdf' \
+	cbr2pdf-dir='tree -fai . | grep -P "cbr$" | xargs -L1 -I{} /home/aleister/.local/scripts/cbr2pdf {}' \
+	cbz2pdf='/home/aleister/.local/scripts/cbz2pdf' \
+	cbz2pdf-dir='tree -fai . | grep -P "cbz$" | xargs -L1 -I{} /home/aleister/.local/scripts/cbz2pdf {}' \
+
+# update
+alias update='yay -Syyu'
