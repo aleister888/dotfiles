@@ -15,14 +15,14 @@ getmount() { \
 mountusb() { \
 	chosen="$(echo "$usbdrives" | dmenu -p "Mount which drive?")" || exit 1
 	chosen="$(echo "$chosen" | awk '{print $1}')"
-	sudo -A mount "$chosen" 2>/dev/null && notify-send "💻 USB mounting" "$chosen mounted." && exit 0
+	pkexec sudo -A mount "$chosen" 2>/dev/null && notify-send "💻 USB mounting" "$chosen mounted." && exit 0
 	alreadymounted=$(lsblk -nrpo "name,type,mountpoint" | awk '$3!~/\/boot|\/home$|SWAP/&&length($3)>1{printf "-not ( -path *%s -prune ) ",$3}')
 	getmount "$HOME/.local/mnt/*/ -maxdepth 0 -type d $alreadymounted"
 	partitiontype="$(lsblk -no "fstype" "$chosen")"
 	case "$partitiontype" in
-		"vfat") sudo -A mount -t vfat "$chosen" "$mp" -o rw,umask=0000;;
-		"exfat") sudo -A mount "$chosen" "$mp" -o uid="$(id -u)",gid="$(id -g)";;
-		*) sudo -A mount "$chosen" "$mp"; user="$(whoami)"; ug="$(groups | awk '{print $1}')"; sudo -A chown "$user":"$ug" "$mp";;
+		"vfat") pkexev sudo -A mount -t vfat "$chosen" "$mp" -o rw,umask=0000;;
+		"exfat") pkexec sudo -A mount "$chosen" "$mp" -o uid="$(id -u)",gid="$(id -g)";;
+		*) pkexec sudo -A mount "$chosen" "$mp"; user="$(whoami)"; ug="$(groups | awk '{print $1}')"; pkexec sudo -A chown "$user":"$ug" "$mp";;
 	esac
 	notify-send "💻 USB mounting" "$chosen mounted to $mp."
 	}
@@ -45,11 +45,22 @@ asktype() { \
 	esac
 	}
 
+nousb() { \
+	option0="Cancel"
+	option1="Exec 'mount -a'"
+	options="$option0\n$option1"
+	chosen="$(echo "$options" | dmenu -p "No USB drive or Android device detected")"
+	case $chosen in
+	$option0) exit;;
+	$option1) pkexec sudo mount -a && notify-send "💻 USB Automounting";;
+	esac
+	}
+
 anddrives=$(simple-mtpfs -l 2>/dev/null)
 usbdrives="$(lsblk -rpo "name,type,size,mountpoint" | grep 'part\|rom' | awk '$4==""{printf "%s (%s)\n",$1,$3}')"
 
 if [ -z "$usbdrives" ]; then
-	[ -z "$anddrives" ] && echo "No USB drive or Android device detected" && exit
+	[ -z "$anddrives" ] && nousb & exit
 	echo "Android device(s) detected."
 	mountandroid
 else
